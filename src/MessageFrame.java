@@ -5,7 +5,7 @@ import java.awt.event.ActionListener;
 /**
  * Created by Mihai on 5/16/2015.
  */
-public class MessageFrame extends JFrame implements ActionListener {
+public class MessageFrame extends JFrame {
     private String number;
     private String message;
     private JPanel contentPanel;
@@ -30,10 +30,6 @@ public class MessageFrame extends JFrame implements ActionListener {
 
         contentPanel = new JPanel();
         contentPanel.setLayout(null);
-
-    }
-    @Override
-    public void actionPerformed(ActionEvent e) {
 
     }
 }

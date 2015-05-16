@@ -2,9 +2,11 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.IOException;
+import static com.billingclient.connection.ConnectionConstants.*;
 
 /**
- * Created by Mihai on 5/16/2015.
+ * Authentication frame
  */
 public class AuthenticationFrame extends JFrame implements ActionListener {
     private JPanel contentPanel;
@@ -14,8 +16,10 @@ public class AuthenticationFrame extends JFrame implements ActionListener {
     private JButton signInButton;
     private JButton cancelButton;
     private String number;
-    public AuthenticationFrame() {
-
+    private ServiceManager serviceManager;
+    public AuthenticationFrame( String serverHost, int portNumber ) throws IOException
+    {
+        serviceManager = new ServiceManager(serverHost, portNumber);
         try
         {
             for (UIManager.LookAndFeelInfo info : UIManager.getInstalledLookAndFeels()) {
@@ -63,23 +67,40 @@ public class AuthenticationFrame extends JFrame implements ActionListener {
         } else {
             if (errorLabel != null )
                 contentPanel.remove(errorLabel);
-            if (ServiceManager.getManager().Authenticate(numberField.getText()) == true) {
-                new MainFrame(numberField.getText());
-                setVisible(false);
-            } else {
-                errorLabel = new JLabel("Authentication Failed...");
-                errorLabel.setBounds(100, 280, 200, 20);
-                errorLabel.setHorizontalTextPosition(SwingConstants.CENTER);
-                errorLabel.setFont(new Font("Courier", Font.PLAIN, 12));
-                errorLabel.setForeground(Color.RED);
-                contentPanel.add(errorLabel);
-                numberField.setText("");
-                repaint();
+
+            try
+            {
+                if (serviceManager.authenticate(numberField.getText())) {
+                    new MainFrame(serviceManager);
+                    setVisible(false);
+                    dispose();
+                } else {
+                    errorLabel = new JLabel("Authentication Failed...");
+                    errorLabel.setBounds(100, 280, 200, 20);
+                    errorLabel.setHorizontalTextPosition(SwingConstants.CENTER);
+                    errorLabel.setFont(new Font("Courier", Font.PLAIN, 12));
+                    errorLabel.setForeground(Color.RED);
+                    contentPanel.add(errorLabel);
+                    numberField.setText("");
+                    repaint();
+                }
+            }
+            catch (IOException e1)
+            {
+                e1.printStackTrace();
             }
         }
     }
 
     public static void main(String[] args) {
-        new AuthenticationFrame();
+        try
+        {
+            new AuthenticationFrame( args.length == 0 ? "localhost" : args[0], SERVER_PORT );
+        }
+        catch (IOException e)
+        {
+            e.printStackTrace();
+            System.exit(1);
+        }
     }
 }

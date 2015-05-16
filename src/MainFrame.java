@@ -1,12 +1,15 @@
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.regex.Pattern;
+
+import static com.billingclient.connection.ConnectionConstants.*;
 
 /**
  * Created by Mihai on 5/16/2015.
  */
-public class MainFrame extends JFrame implements ActionListener {
+public class MainFrame extends JFrame {
     private String number;
     private JLabel numberLabel;
     private JButton voiceCallBtn;
@@ -15,8 +18,11 @@ public class MainFrame extends JFrame implements ActionListener {
     private JButton balanceBtn;
     private JButton callHistoryBtn;
     private JPanel contentPanel;
+    private ServiceManager serviceManager;
+    private ExecutorService executorService = Executors.newFixedThreadPool(1);
 
-    public MainFrame(String _number) {
+    public MainFrame(ServiceManager serviceManager) {
+        this.serviceManager = serviceManager;
         try
         {
             for (UIManager.LookAndFeelInfo info : UIManager.getInstalledLookAndFeels()) {
@@ -29,21 +35,30 @@ public class MainFrame extends JFrame implements ActionListener {
         catch (ClassNotFoundException | InstantiationException | IllegalAccessException | UnsupportedLookAndFeelException e)
         {System.out.print("error");}
 
-        number = _number;
         contentPanel = new JPanel();
         contentPanel.setLayout(null);
         add(contentPanel);
         numberLabel = new JLabel(number);
         voiceCallBtn = new JButton("Voice Call");
-        voiceCallBtn.addActionListener(this);
+        voiceCallBtn.addActionListener(e -> {
+
+        });
         videoCallBtn = new JButton("Video Call");
-        videoCallBtn.addActionListener(this);
+        videoCallBtn.addActionListener(e -> {
+
+        });
         sendSMSBtn = new JButton("Send SMS");
-        sendSMSBtn.addActionListener(this);
+        sendSMSBtn.addActionListener(e -> {
+
+        });
         balanceBtn = new JButton("View Balance");
-        balanceBtn.addActionListener(this);
+        balanceBtn.addActionListener(e -> {
+            serviceManager.sendMessage(BALANCE);
+        });
         callHistoryBtn = new JButton("View Call History");
-        callHistoryBtn.addActionListener(this);
+        callHistoryBtn.addActionListener(e -> {
+
+        });
         contentPanel.add(numberLabel);
         contentPanel.add(voiceCallBtn);
         contentPanel.add(videoCallBtn);
@@ -65,20 +80,28 @@ public class MainFrame extends JFrame implements ActionListener {
         setTitle("Main");
         setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
         setVisible(true);
+
+        executorService.execute(this::listenServer);
     }
 
-    @Override
-    public void actionPerformed(ActionEvent e) {
-        if (e.getSource().equals(voiceCallBtn)) {
+    public void listenServer()
+    {
+        String message = null;
+        do
+        {
+            message = serviceManager.receiveMessage();
+            String[] data = message.split(Pattern.quote(SEPARATOR));
+            //JOptionPane.showMessageDialog(null, message);
 
-        } else if (e.getSource().equals(videoCallBtn)) {
+            switch (data[0])
+            {
+                case BALANCE:
+                    SwingUtilities.invokeLater(() -> {
+                        new BalanceFrame(data[1]);
+                    });
+                    break;
+            }
+        } while (!message.equals(DISCONNECT));
 
-        } else if (e.getSource().equals(sendSMSBtn)) {
-
-        } else if (e.getSource().equals(balanceBtn)) {
-            new BalanceFrame(number);
-        } else {
-
-        }
     }
 }

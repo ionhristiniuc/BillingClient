@@ -5,14 +5,14 @@ import java.awt.event.ActionListener;
 /**
  * Created by Mihai on 5/16/2015.
  */
-public class BalanceFrame extends JFrame implements ActionListener {
+public class BalanceFrame extends JFrame {
     String balance;
-    String number;
     private JButton OKBtn;
     private JLabel label;
     private JLabel balanceLabel;
     private JPanel contentPanel;
-    BalanceFrame(String _number) {
+
+    BalanceFrame( String balance ) {
         try
         {
             for (UIManager.LookAndFeelInfo info : UIManager.getInstalledLookAndFeels()) {
@@ -24,14 +24,16 @@ public class BalanceFrame extends JFrame implements ActionListener {
         }
         catch (ClassNotFoundException | InstantiationException | IllegalAccessException | UnsupportedLookAndFeelException e)
         {System.out.print("error");}
-        number = _number;
-        balance = ServiceManager.getManager().getBalance(number);
         OKBtn = new JButton("OK");
-        OKBtn.addActionListener(this);
+        OKBtn.addActionListener(e -> {
+            setVisible(false);
+            dispose();
+                });
         label = new JLabel("Your balance:");
         label.setHorizontalAlignment(SwingConstants.CENTER);
         balanceLabel = new JLabel(balance);
         balanceLabel.setHorizontalAlignment(SwingConstants.CENTER);
+        balanceLabel.setText(balance);
         contentPanel = new JPanel();
         contentPanel.setLayout(null);
         add(contentPanel);
@@ -47,10 +49,5 @@ public class BalanceFrame extends JFrame implements ActionListener {
         setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
         setVisible(true);
     }
-    @Override
-    public void actionPerformed(ActionEvent e) {
-        if (e.getSource().equals(OKBtn)) {
-            setVisible(false);
-        }
-    }
+
 }
