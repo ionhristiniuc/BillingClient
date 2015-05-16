@@ -1,21 +1,30 @@
+import jdk.nashorn.internal.codegen.CompilerConstants;
+
 import javax.swing.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import static com.billingclient.connection.ConnectionConstants.*;
 
 /**
  * Created by Mihai on 5/16/2015.
  */
-public class NewCallFrame extends JFrame implements ActionListener {
+public class NewCallFrame extends JFrame {
     private CallFrame.CallType type;
+    private final ServiceManager serviceManager;
     private String number;
     private JPanel contentPanel;
     private JLabel label;
     private JTextField numberField;
     private JButton callButton;
     private JButton cancelButton;
+    private ExecutorService executorService = Executors.newFixedThreadPool(1);
+    public CallFrame cf;
 
-    NewCallFrame(CallFrame.CallType t) {
+    NewCallFrame(CallFrame.CallType t, ServiceManager serviceManager) {
         type = t;
+        this.serviceManager = serviceManager;
         contentPanel = new JPanel();
         contentPanel.setLayout(null);
         add(contentPanel);
@@ -28,27 +37,35 @@ public class NewCallFrame extends JFrame implements ActionListener {
         callButton = new JButton("Call");
         contentPanel.add(callButton);
         callButton.setBounds(20, 140, 60, 40);
-        cancelButton = new JButton("Cancel");
-        contentPanel.add(cancelButton);
-        cancelButton.setBounds(120, 140, 60, 40);
-        setSize(300, 550);
-        setLocation(533, 95);
-        setResizable(false);
-        setTitle("Enter called number");
-        setVisible(true);
-    }
-    @Override
-    public void actionPerformed(ActionEvent e) {
-        if (e.getSource().equals(callButton)) {
+        callButton.addActionListener(e -> {
             number = numberField.getText();
             if ("".equals(number))
                 return;
-            else {
-                new CallFrame(type, number, CallFrame.CallDirection.FromMe);
+            else
+            {
+                cf = new CallFrame(type, number, CallFrame.CallDirection.FromMe, serviceManager);
+                executorService.execute(() -> {
+                    serviceManager.sendMessage(CALL + SEPARATOR + number);
+                });
             }
-        } else {
-            setVisible(false);
-            dispose();
+        });
+
+            cancelButton = new JButton("Cancel");
+            cancelButton.addActionListener(e -> {
+                setVisible(false);
+                dispose();
+            });
+        contentPanel.add(cancelButton);
+            cancelButton.setBounds(120, 140, 60, 40);
+            setSize(300, 550);
+            setLocation(533, 95);
+            setResizable(false);
+            setTitle("Enter called number");
+            setVisible(true);
         }
-    }
+
+        public void startTimer()
+        {
+            cf.startTimer();
+        }
 }

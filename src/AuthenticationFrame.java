@@ -36,6 +36,7 @@ public class AuthenticationFrame extends JFrame implements ActionListener {
         contentPanel.setLayout(null);
         add(contentPanel);
         numberField = new JTextField();
+        numberField.addActionListener(this);
         contentPanel.add(numberField);
         label = new JLabel("Enter your phone number:");
         contentPanel.add(label);
@@ -70,20 +71,27 @@ public class AuthenticationFrame extends JFrame implements ActionListener {
 
             try
             {
-                if (serviceManager.authenticate(numberField.getText())) {
-                    new MainFrame(serviceManager);
-                    setVisible(false);
-                    dispose();
-                } else {
-                    errorLabel = new JLabel("Authentication Failed...");
-                    errorLabel.setBounds(100, 280, 200, 20);
-                    errorLabel.setHorizontalTextPosition(SwingConstants.CENTER);
-                    errorLabel.setFont(new Font("Courier", Font.PLAIN, 12));
-                    errorLabel.setForeground(Color.RED);
-                    contentPanel.add(errorLabel);
-                    numberField.setText("");
-                    repaint();
+                if ( !numberField.getText().equals(""))
+                {
+                    if (serviceManager.authenticate(numberField.getText())) {
+                        number = numberField.getText();
+                        new MainFrame(serviceManager, number);
+                        setVisible(false);
+                        dispose();
+                    } else {
+                        //errorLabel = new JLabel("Authentication Failed...");
+//                        errorLabel.setBounds(100, 280, 200, 20);
+//                        errorLabel.setHorizontalTextPosition(SwingConstants.CENTER);
+//                        errorLabel.setFont(new Font("Courier", Font.PLAIN, 12));
+//                        errorLabel.setForeground(Color.RED);
+                        contentPanel.add(errorLabel);
+                        numberField.setText("");
+                        repaint();
+                    }
                 }
+                else
+                    JOptionPane.showMessageDialog(this, "Invalid number", "Error", JOptionPane.ERROR_MESSAGE);
+
             }
             catch (IOException e1)
             {

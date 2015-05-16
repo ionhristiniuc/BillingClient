@@ -1,6 +1,9 @@
 import javax.swing.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.*;
+import java.util.Timer;
+import static com.billingclient.connection.ConnectionConstants.*;
 
 /**
  * Created by Mihai on 5/16/2015.
@@ -15,6 +18,7 @@ public class CallFrame extends JFrame implements ActionListener {
         ToMe
     }
     private CallType type;
+    private final ServiceManager serviceManager;
     private CallDirection direction;
     private String callingNumber;
     private JLabel topLabel;
@@ -24,10 +28,12 @@ public class CallFrame extends JFrame implements ActionListener {
     private JButton endCallButton;
     private JButton pauseContinueButton;
     private JPanel contentPanel;
-    public CallFrame( CallType t, String callingNumber, CallDirection d) {
+    private Timer timer = new Timer();
+    public CallFrame( CallType t, String callingNumber, CallDirection d, ServiceManager serviceManager) {
         this.callingNumber = callingNumber;
         this.direction = d;
         this.type = t;
+        this.serviceManager = serviceManager;
         contentPanel = new JPanel();
         contentPanel.setLayout(null);
         add(contentPanel);
@@ -37,6 +43,9 @@ public class CallFrame extends JFrame implements ActionListener {
             topLabel = new JLabel("Voice Call");
         contentPanel.add(topLabel);
         topLabel.setBounds(80, 20, 140, 40);
+        durationLabel = new JLabel("0");
+        contentPanel.add(durationLabel);
+        durationLabel.setBounds(0, 0, 10, 10);
         numberLabel = new JLabel(callingNumber);
         contentPanel.add(numberLabel);
         numberLabel.setBounds(40, 80, 220, 40);
@@ -64,15 +73,24 @@ public class CallFrame extends JFrame implements ActionListener {
         else
             setTitle("Incoming call...");
         setVisible(true);
-
-
         // send message to server to call
+    }
+    public void startTimer() {
+        timer.schedule(new TimerTask()
+        {
+            @Override
+            public void run()
+            {
+                SwingUtilities.invokeLater(() -> {
+                    durationLabel.setText(String.valueOf(Integer.parseInt(durationLabel.getText()) + 1));
+                });
+            }
+        }, 0, 1000);
     }
     @Override
     public void actionPerformed(ActionEvent e) {
         if (e.getSource().equals(endCallButton)) {
-            // send message to server to end call
-            // display call duration
+            serviceManager.sendMessage( STOP );
         } else {
             if (((JButton)e.getSource()).getText().equals("Pause")) {
                 // send message to pause call

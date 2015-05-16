@@ -21,9 +21,12 @@ public class MainFrame extends JFrame {
     private JPanel contentPanel;
     private ServiceManager serviceManager;
     private ExecutorService executorService = Executors.newFixedThreadPool(1);
+    private IncomingCallFrame icf;
+    private NewCallFrame ncf;
 
-    public MainFrame(ServiceManager serviceManager) {
+    public MainFrame(ServiceManager serviceManager, String number) {
         this.serviceManager = serviceManager;
+        this.number = number;
         try
         {
             for (UIManager.LookAndFeelInfo info : UIManager.getInstalledLookAndFeels()) {
@@ -42,11 +45,11 @@ public class MainFrame extends JFrame {
         numberLabel = new JLabel(number);
         voiceCallBtn = new JButton("Voice Call");
         voiceCallBtn.addActionListener(e -> {
-            new CalledNumberFrame(CallFrame.CallType.VoiceCall);
+            new NewCallFrame(CallFrame.CallType.VoiceCall, serviceManager);
         });
         videoCallBtn = new JButton("Video Call");
         videoCallBtn.addActionListener(e -> {
-            new CalledNumberFrame(CallFrame.CallType.VideoCall);
+            new NewCallFrame(CallFrame.CallType.VideoCall, serviceManager);
         });
         sendSMSBtn = new JButton("Send SMS");
         sendSMSBtn.addActionListener(e -> {
@@ -91,18 +94,82 @@ public class MainFrame extends JFrame {
         do
         {
             message = serviceManager.receiveMessage();
-            String[] data = message.split(Pattern.quote(SEPARATOR));
             //JOptionPane.showMessageDialog(null, message);
+            processMessage(message);
 
-            switch (data[0])
-            {
-                case BALANCE:
-                    SwingUtilities.invokeLater(() -> {
-                        new BalanceFrame(data[1]);
-                    });
-                    break;
-            }
         } while (!message.equals(DISCONNECT));
 
+    }
+
+    private void processMessage( String message )
+    {
+        String[] data = message.split(Pattern.quote(SEPARATOR));
+        displayMessage(message);
+
+        switch (data[0])
+        {
+            case BALANCE:
+                SwingUtilities.invokeLater(() -> {
+                    //new BalanceFrame(data[1]);
+                    JOptionPane.showMessageDialog(this, "Balance: " + data[1], "Balance", JOptionPane.INFORMATION_MESSAGE);
+                });
+                break;
+            case CALL:
+                // suna altul sau raspunzi sau inchizi      inchizi - STOP + SEPARATOR +
+                //icf = new IncomingCallFrame(data[1], serviceManager);
+                //icf.startCallFrameTimer();
+                //JOptionPane.showInputDialog(this,"Incoming call from " + data[1], "Incoming Call", JOptionPane.QUESTION_MESSAGE);
+                int result = JOptionPane.showConfirmDialog(this, "Incoming call from " + data[1], "Incoming Call", JOptionPane.YES_NO_OPTION,
+                        JOptionPane.QUESTION_MESSAGE);
+
+                if (result == JOptionPane.YES_OPTION)
+                {
+                    serviceManager.sendMessage(ANSWERED + SEPARATOR + data[1]);
+                    // pornim ceasul
+                }
+                else
+                {
+                    serviceManager.sendMessage(STOP + SEPARATOR + data[1]);
+                }
+                break;
+            case ANSWERED:
+                // pornim ceasornicul
+                break;
+            case NO_RESOURCES:  // no money
+                JOptionPane.showMessageDialog( this, "You don't have enough credit" );
+                break;
+            /*case INVALID_PHONE_NUMBER:
+
+                break;*/
+            case INVALID_PHONE_NUMBER_CALL:
+//                if ( ncf.cf != null )
+//                {
+//                    ncf.cf.setVisible(false);
+//                    ncf.cf.dispose();
+//                    ncf.setVisible(false);
+//                    ncf.dispose();
+//                }
+                JOptionPane.showMessageDialog(this, "Invalid phone number", "Error", JOptionPane.ERROR_MESSAGE);
+                break;
+            case STOP:
+                // oprim ceasornicul
+                break;
+            case OFFLINE:
+                JOptionPane.showMessageDialog(this, "This person is not connected", "Error", JOptionPane.INFORMATION_MESSAGE);
+                break;
+            case WAIT_RESPONSE:
+                JOptionPane.showMessageDialog(this, "We're waiting for " + data[1] + " to respond", "Wait", JOptionPane.INFORMATION_MESSAGE);
+                break;
+            case BUSY:
+                JOptionPane.showMessageDialog(this, data[1] + " is busy now", "Busy", JOptionPane.INFORMATION_MESSAGE);
+                break;
+            default:
+                displayMessage("Unhandled message: " + message);
+        }
+    }
+
+    private void displayMessage(String message )
+    {
+        System.out.println(message);
     }
 }
