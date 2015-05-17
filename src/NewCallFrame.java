@@ -5,7 +5,7 @@ import java.awt.event.ActionListener;
 /**
  * Created by Mihai on 5/16/2015.
  */
-public class CalledNumberFrame extends JFrame implements ActionListener {
+public class NewCallFrame extends JFrame implements ActionListener {
     private CallFrame.CallType type;
     private String number;
     private JPanel contentPanel;
@@ -14,7 +14,7 @@ public class CalledNumberFrame extends JFrame implements ActionListener {
     private JButton callButton;
     private JButton cancelButton;
 
-    CalledNumberFrame(CallFrame.CallType t) {
+    NewCallFrame(CallFrame.CallType t) {
         type = t;
         contentPanel = new JPanel();
         contentPanel.setLayout(null);
