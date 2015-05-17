@@ -5,7 +5,7 @@ import java.awt.event.ActionListener;
 /**
  * Created by Mihai on 5/16/2015.
  */
-public class MessageFrame extends JFrame {
+public class CreateMessageFrame extends JFrame {
     private String number;
     private String message;
     private JPanel contentPanel;
@@ -15,7 +15,7 @@ public class MessageFrame extends JFrame {
     private JTextField messageTextField;
     private JButton sendButton;
     private JButton cancelButton;
-    MessageFrame() {
+    CreateMessageFrame() {
         try
         {
             for (UIManager.LookAndFeelInfo info : UIManager.getInstalledLookAndFeels()) {
