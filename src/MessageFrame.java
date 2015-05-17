@@ -5,7 +5,7 @@ import java.awt.event.ActionListener;
 /**
  * Created by Mihai on 5/16/2015.
  */
-public class MessageViewerFrame extends JFrame implements ActionListener {
+public class MessageFrame extends JFrame {
     private String time, number, message;
     private JPanel contentPanel;
     private JLabel receivedLabel;
@@ -15,7 +15,7 @@ public class MessageViewerFrame extends JFrame implements ActionListener {
     private JTextArea messageArea;
     private JButton OKButton;
 
-    MessageViewerFrame(String time, String number, String message) {
+    MessageFrame(String time, String number, String message) {
         this.time = time;
         this.number = number;
         this.message = message;
@@ -40,7 +40,10 @@ public class MessageViewerFrame extends JFrame implements ActionListener {
         contentPanel.add(sp);
         sp.setBounds(20, 100, 160, 120);
         OKButton = new JButton("OK");
-        OKButton.addActionListener(this);
+        OKButton.addActionListener(e -> {
+            setVisible(false);
+            dispose();
+        });
         contentPanel.add(OKButton);
         OKButton.setBounds(60, 240, 80, 40);
 
@@ -49,9 +52,5 @@ public class MessageViewerFrame extends JFrame implements ActionListener {
         setResizable(false);
         setTitle("Message");
         setVisible(true);
-    }
-    @Override
-    public void actionPerformed(ActionEvent e) {
-
     }
 }

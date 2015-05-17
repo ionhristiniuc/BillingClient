@@ -68,6 +68,9 @@ public class CallFrame extends JFrame {
         endCallButton = new JButton("End Call");
         endCallButton.addActionListener(e -> {
             serviceManager.sendMessage(STOP + SEPARATOR + callingNumber);
+            serviceManager.sendMessage(BALANCE);
+            setVisible(false);
+            dispose();
         });
         contentPanel.add(endCallButton);
         endCallButton.setBounds(20, 180, 95, 40);

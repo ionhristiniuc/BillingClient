@@ -10,7 +10,9 @@ import static com.billingclient.connection.ConnectionConstants.*;
  * Created by Mihai on 5/16/2015.
  */
 public class MainFrame extends JFrame {
-
+    public  String smsNumberToSend;
+    public  String smsToSend;
+    public  String numberToCall;
     private String number;
     private JLabel numberLabel;
     private JButton voiceCallBtn;
@@ -21,8 +23,9 @@ public class MainFrame extends JFrame {
     private JPanel contentPanel;
     private ServiceManager serviceManager;
     private ExecutorService executorService = Executors.newFixedThreadPool(1);
-    private IncomingCallFrame icf;
-    private NewCallFrame ncf;
+    private CallFrame callFrame;
+    private CallFrame.CallType callType;
+    private CallFrame.CallDirection callDirection;
 
     public MainFrame(ServiceManager serviceManager, String number) {
         this.serviceManager = serviceManager;
@@ -45,15 +48,19 @@ public class MainFrame extends JFrame {
         numberLabel = new JLabel(number);
         voiceCallBtn = new JButton("Voice Call");
         voiceCallBtn.addActionListener(e -> {
-            new NewCallFrame(CallFrame.CallType.VoiceCall, serviceManager);
+            new NewCallFrame(this);
+            callType = CallFrame.CallType.VoiceCall;
+            callDirection = CallFrame.CallDirection.FromMe;
         });
         videoCallBtn = new JButton("Video Call");
         videoCallBtn.addActionListener(e -> {
-            new NewCallFrame(CallFrame.CallType.VideoCall, serviceManager);
+            new NewCallFrame(this);
+            callType = CallFrame.CallType.VideoCall;
+            callDirection = CallFrame.CallDirection.FromMe;
         });
         sendSMSBtn = new JButton("Send SMS");
         sendSMSBtn.addActionListener(e -> {
-
+            new NewMessageFrame(this);
         });
         balanceBtn = new JButton("View Balance");
         balanceBtn.addActionListener(e -> {
@@ -69,7 +76,7 @@ public class MainFrame extends JFrame {
         contentPanel.add(sendSMSBtn);
         contentPanel.add(balanceBtn);
         contentPanel.add(callHistoryBtn);
-        numberLabel.setBounds(20, 40, 220, 40);
+        numberLabel.setBounds(20, 40, 260, 40);
         numberLabel.setHorizontalAlignment(SwingConstants.CENTER);
         numberLabel.setFont(new Font("Courier", Font.PLAIN, 20));
         voiceCallBtn.setBounds(60, 120, 180, 40);
@@ -87,6 +94,16 @@ public class MainFrame extends JFrame {
 
         executorService.execute(this::listenServer);
     }
+
+    public void startNewCall() {
+        callFrame = new CallFrame(callType, numberToCall, CallFrame.CallDirection.FromMe, CallFrame.CallStatus.Connecting, serviceManager);
+        serviceManager.sendMessage(CALL + SEPARATOR + numberToCall);
+    }
+
+    public void sendNewSMS () {
+       //serviceManager.sendMessage();
+    }
+
 
     public void listenServer()
     {
@@ -110,22 +127,22 @@ public class MainFrame extends JFrame {
         {
             case BALANCE:
                 SwingUtilities.invokeLater(() -> {
-                    //new BalanceFrame(data[1]);
                     JOptionPane.showMessageDialog(this, "Balance: " + data[1], "Balance", JOptionPane.INFORMATION_MESSAGE);
                 });
                 break;
             case CALL:
-                // suna altul sau raspunzi sau inchizi      inchizi - STOP + SEPARATOR +
-                //icf = new IncomingCallFrame(data[1], serviceManager);
-                //icf.startCallFrameTimer();
-                //JOptionPane.showInputDialog(this,"Incoming call from " + data[1], "Incoming Call", JOptionPane.QUESTION_MESSAGE);
-                int result = JOptionPane.showConfirmDialog(this, "Incoming call from " + data[1], "Incoming Call", JOptionPane.YES_NO_OPTION,
+                int result = JOptionPane.showConfirmDialog(this, "Incoming call from " + data[1] + "\nRespond?", "Incoming Call", JOptionPane.YES_NO_OPTION,
                         JOptionPane.QUESTION_MESSAGE);
 
                 if (result == JOptionPane.YES_OPTION)
                 {
                     serviceManager.sendMessage(ANSWERED + SEPARATOR + data[1]);
-                    // pornim ceasul
+                    if (callFrame != null)
+                        callFrame.setStatus(CallFrame.CallStatus.Connected);
+                    else {
+                        callFrame = new CallFrame(callType, data[1], CallFrame.CallDirection.ToMe, CallFrame.CallStatus.Connecting, serviceManager);
+                        callFrame.setStatus(CallFrame.CallStatus.Connected);
+                    }
                 }
                 else
                 {
@@ -133,32 +150,32 @@ public class MainFrame extends JFrame {
                 }
                 break;
             case ANSWERED:
-                // pornim ceasornicul
+                callFrame.setStatus(CallFrame.CallStatus.Connected);
                 break;
-            case NO_RESOURCES:  // no money
+            case NO_RESOURCES:
                 JOptionPane.showMessageDialog( this, "You don't have enough credit" );
                 break;
             /*case INVALID_PHONE_NUMBER:
 
                 break;*/
             case INVALID_PHONE_NUMBER_CALL:
-//                if ( ncf.cf != null )
-//                {
-//                    ncf.cf.setVisible(false);
-//                    ncf.cf.dispose();
-//                    ncf.setVisible(false);
-//                    ncf.dispose();
-//                }
                 JOptionPane.showMessageDialog(this, "Invalid phone number", "Error", JOptionPane.ERROR_MESSAGE);
                 break;
             case STOP:
-                // oprim ceasornicul
+                if (callFrame != null) {
+                    callFrame.setVisible(false);
+                    callFrame.dispose();
+                }
+                if (data[2] != null) {
+                    String duration = data[2];
+                    JOptionPane.showMessageDialog(this, "Call duration: " + duration, "Info", JOptionPane.INFORMATION_MESSAGE);
+                }
                 break;
             case OFFLINE:
                 JOptionPane.showMessageDialog(this, "This person is not connected", "Error", JOptionPane.INFORMATION_MESSAGE);
                 break;
             case WAIT_RESPONSE:
-                JOptionPane.showMessageDialog(this, "We're waiting for " + data[1] + " to respond", "Wait", JOptionPane.INFORMATION_MESSAGE);
+                //JOptionPane.showMessageDialog(this, "We're waiting for " + data[1] + " to respond", "Wait", JOptionPane.INFORMATION_MESSAGE);
                 break;
             case BUSY:
                 JOptionPane.showMessageDialog(this, data[1] + " is busy now", "Busy", JOptionPane.INFORMATION_MESSAGE);

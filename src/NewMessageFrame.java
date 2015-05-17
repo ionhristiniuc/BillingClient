@@ -5,7 +5,7 @@ import java.awt.event.ActionListener;
 /**
  * Created by Mihai on 5/16/2015.
  */
-public class CreateMessageFrame extends JFrame {
+public class NewMessageFrame extends JFrame {
     private String number;
     private String message;
     private JPanel contentPanel;
@@ -15,7 +15,7 @@ public class CreateMessageFrame extends JFrame {
     private JTextArea messageTextArea;
     private JButton sendButton;
     private JButton cancelButton;
-    CreateMessageFrame() {
+    NewMessageFrame(MainFrame frame) {
         try
         {
             for (UIManager.LookAndFeelInfo info : UIManager.getInstalledLookAndFeels()) {
@@ -38,31 +38,35 @@ public class CreateMessageFrame extends JFrame {
         msgLabel = new JLabel("Message:");
         contentPanel.add(msgLabel);
         msgLabel.setHorizontalAlignment(SwingConstants.CENTER);
-        msgLabel.setBounds(80, 60, 140, 10);
+        msgLabel.setBounds(80, 70, 140, 20);
         numberTextField = new JTextField();
         contentPanel.add(numberTextField);
-        numberTextField.setBounds(40, 30, 220, 20);
+        numberTextField.setBounds(40, 30, 220, 30);
         messageTextArea = new JTextArea();
         //messageTextField.setBorder(BorderFactory.createLineBorder(Color.GRAY));
         JScrollPane sp = new JScrollPane(messageTextArea);
-        sp.setBounds(40, 80, 220, 85);
+        sp.setBounds(40, 100, 220, 85);
         contentPanel.add(sp);
         sendButton = new JButton("Send");
         sendButton.addActionListener(e -> {
-
+            frame.smsNumberToSend = numberTextField.getText();
+            frame.smsToSend = messageTextArea.getText();
+            frame.sendNewSMS();
+            setVisible(false);
+            dispose();
         });
-        sendButton.setBounds(40, 175, 80, 30);
+        sendButton.setBounds(40, 200, 80, 30);
         contentPanel.add(sendButton);
         cancelButton = new JButton("Cancel");
         cancelButton.addActionListener(e -> {
             setVisible(false);
             dispose();
         });
-        cancelButton.setBounds(180, 175, 80, 30);
+        cancelButton.setBounds(180, 200, 80, 30);
         contentPanel.add(cancelButton);
 
         setTitle("Send Message");
-        setSize(300, 255);
+        setSize(300, 270);
         setResizable(false);
         setLocation(533, 210);
         setVisible(true);

@@ -12,7 +12,6 @@ public class AuthenticationFrame extends JFrame implements ActionListener {
     private JPanel contentPanel;
     private JTextField numberField;
     private JLabel label;
-    private JLabel errorLabel;
     private JButton signInButton;
     private JButton cancelButton;
     private String number;
@@ -66,9 +65,6 @@ public class AuthenticationFrame extends JFrame implements ActionListener {
         if (e.getSource().equals(cancelButton)) {
             System.exit(0);
         } else {
-            if (errorLabel != null )
-                contentPanel.remove(errorLabel);
-
             try
             {
                 if ( !numberField.getText().equals(""))
@@ -79,19 +75,10 @@ public class AuthenticationFrame extends JFrame implements ActionListener {
                         setVisible(false);
                         dispose();
                     } else {
-                        //errorLabel = new JLabel("Authentication Failed...");
-//                        errorLabel.setBounds(100, 280, 200, 20);
-//                        errorLabel.setHorizontalTextPosition(SwingConstants.CENTER);
-//                        errorLabel.setFont(new Font("Courier", Font.PLAIN, 12));
-//                        errorLabel.setForeground(Color.RED);
-                        contentPanel.add(errorLabel);
+                        JOptionPane.showMessageDialog(this, "Invalid number", "Error", JOptionPane.ERROR_MESSAGE);
                         numberField.setText("");
-                        repaint();
                     }
                 }
-                else
-                    JOptionPane.showMessageDialog(this, "Invalid number", "Error", JOptionPane.ERROR_MESSAGE);
-
             }
             catch (IOException e1)
             {
