@@ -10,6 +10,7 @@ import static com.billingclient.connection.ConnectionConstants.*;
  * Created by Mihai on 5/16/2015.
  */
 public class MainFrame extends JFrame {
+
     private String number;
     private JLabel numberLabel;
     private JButton voiceCallBtn;
@@ -41,11 +42,11 @@ public class MainFrame extends JFrame {
         numberLabel = new JLabel(number);
         voiceCallBtn = new JButton("Voice Call");
         voiceCallBtn.addActionListener(e -> {
-
+            new CalledNumberFrame(CallFrame.CallType.VoiceCall);
         });
         videoCallBtn = new JButton("Video Call");
         videoCallBtn.addActionListener(e -> {
-
+            new CalledNumberFrame(CallFrame.CallType.VideoCall);
         });
         sendSMSBtn = new JButton("Send SMS");
         sendSMSBtn.addActionListener(e -> {
